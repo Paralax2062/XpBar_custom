@@ -11,6 +11,8 @@ local lib_items_cfg = require("solylib.items.items_configuration")
 local optionsLoaded, options = pcall(require, "XpBar.options")
 
 local trip = 0
+local textVal
+local displayVal
 
 local optionsFileName = "addons/XpBar/options.lua"
 
@@ -152,46 +154,64 @@ local DrawStuff = function()
 		local remainingExp = nextLevelexp - thisLevelExp
 		local theLevel = myLevel + 1
         lib_helpers.imguiProgressBar(false, levelProgress, options.xpBarWidth, options.xpBarHeight, "To Next Lv: "..comma_value(remainingExp),options.xpBarColor)
-        if options.xpEnableInfoText then
+        
+		--show trip xp
+		if trip > myExp or trip == 0 then
+			trip = myExp
+		end
+		
+		--display trip
+		lib_helpers.TextC(false, 0xFFAAAAAA, "    Trip: ")
+		lib_helpers.TextC(false, 0xFFFFFFFF, "%-12s", comma_value(myExp - trip) .. " xp")
+		imgui.SameLine(0, 12)
+		
+		if imgui.Button("Reset") then
+			trip = myExp
+		end
+		
+		if options.xpEnableInfoText then
 			local percentage = string.format("%i",math.floor(levelProgress*100))
-			local levelString = "Lv" .. theLevel  .. " "
-			local xpString = comma_value(thisLevelExp) .. "/" .. comma_value(nextLevelexp) .. " "
+			local percentageString = string.format("(%s%s)", percentage, "%%")
+			local percentageString = string.format("%-6s",percentageString)
+			local levelString = string.format("%-6s", "Lv" .. theLevel  .. " ")
+			local xpString = string.format("%-22s", comma_value(thisLevelExp) .. "/" .. comma_value(nextLevelexp) .. " ")
+
             lib_helpers.TextC(true, lib_items_cfg.white, "%s", levelString)
 			lib_helpers.TextC(false, 0xFFAAAAAA, "%s", xpString)
-			lib_helpers.TextC(false, lib_items_cfg.white, "(%s%s)", percentage, "%%")
-			
-			getXpTrip(myExp)
+			lib_helpers.TextC(false, lib_items_cfg.white, "%s", percentageString)
         end
+		
+		--show trip xp save and desc field
+		lib_helpers.TextC(false, 0xFFAAAAAA, "    Desc:")
+	
+		imgui.SameLine(0, 7)
+		
+		if textVal == nil then
+			displayVal = ""
+		else
+			displayVal = textVal
+		end
+		
+		imgui.PushItemWidth(88)
+		success, textVal = imgui.InputText("",string.format("%s",displayVal), 255)
+		imgui.PopItemWidth()
+		
+		if success then
+			displayVal = textVal
+		end
+		
+		imgui.SameLine(0, 7)
+		
+		if imgui.Button("Save") then
+			local file = io.open("addons/XpBar/trip.txt", "a")
+			io.output(file)
+			io.write(os.date('\n%Y-%m-%d %H:%M:%S', ts))
+			io.write("  |  ")
+			io.write(string.format("%-16s", comma_value(tostring(myExp - trip))))
+			io.write(string.format("[%s]", displayVal))
+			io.close(file)
+		end
     end
-end
-
---modification: custom function
-function getXpTrip(myExp)
-	if trip > myExp or trip == 0 then
-		trip = myExp
-	end
-	
-	--display trip
-	lib_helpers.TextC(false, 0xFFAAAAAA, "    Trip: ")
-	lib_helpers.TextC(false, 0xFFFFFFFF, "%s", comma_value(myExp - trip))
-	lib_helpers.TextC(false, 0xFFDDDDDD, " xp")
-	imgui.SameLine(0, 14)
-	
-	if imgui.Button("Save") then
-		local file = io.open("addons/XpBar/trip.txt", "a")
-		io.output(file)
-        io.write(os.date('%Y-%m-%d %H:%M:%S', ts))
-		io.write("  |  ")
-        io.write(string.format("    %s\n", comma_value(tostring(myExp - trip))))
-		io.write("\n")
-		io.close(file)
-	end
-	
-	imgui.SameLine(0, 7)
-	
-	if imgui.Button("Reset") then
-		trip = myExp
-	end
 end
 
 function comma_value(amount)

@@ -11,7 +11,7 @@ return {
     xpBarColor = 0xFF936400,
     xpBarX = 50.000000,
     xpBarY = 2.500000,
-    xpBarWidth = 201.000000,
+    xpBarWidth = 228.000000,
     xpBarHeight = 19.000000,
     xpBarNoOverlay = false,
 }
