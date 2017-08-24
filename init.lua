@@ -208,7 +208,7 @@ local DrawStuff = function()
 			io.write(os.date('\n%Y-%m-%d %H:%M:%S', ts))
 			io.write("  |  ")
 			io.write(string.format("%-16s", comma_value(tostring(myExp - trip))))
-			io.write(string.format("[%s]", displayVal))
+			io.write(string.format("\"%s\"", displayVal))
 			io.close(file)
 		end
     end
